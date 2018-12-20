@@ -11,18 +11,7 @@ public class Main {
 
     private static GeografijaDAO baza;
     public static void main(String[] args) throws SQLException {
-//        System.out.println("Gradovi su:\n" + ispisiGradove());
-//        glavniGrad();
-//        Connection connection = DriverManager.getConnection("jdbc:sqlite:baza.db");
-//        Statement statement = connection.createStatement();
 
-//        statement.execute("CREATE TABLE drzava(id INT PRIMARY KEY ,naziv VARCHAR not null )");
-//        statement.execute("CREATE TABLE grad(id int primary key, naziv varchar, broj_stanovnika int, drzava int references drzava(id));");
-//        statement.execute("ALTER TABLE drzava add column glavni_grad int references drzava(id);");
-//        statement.execute("DROP TABLE main.drzava;");
-//        statement.execute("DROP TABLE main.grad;");
-//          statement.execute("alter table drzava drop column glavni_grad");
-//          statement.execute("alter table drzava add glavni_grad int references drzava(id);");
         baza = GeografijaDAO.getInstance();
         System.out.println(baza);
         System.out.println(ispisiGradove());
@@ -43,9 +32,19 @@ public class Main {
         Grad proba = dao.glavniGrad("Bosna i Hercegovina");
         System.out.println(proba);
 
+        glavniGrad();
+
     }
 
     private static void glavniGrad() {
+        GeografijaDAO baza = GeografijaDAO.getInstance();
+        String drzava;
+        System.out.print("Unesite ime drzave: ");
+        Scanner tok = new Scanner(System.in);
+        drzava = tok.nextLine();
+        Grad grad = baza.glavniGrad(drzava);
+        System.out.println(grad.getNaziv());
+
 
     }
 
