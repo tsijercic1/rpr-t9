@@ -24,6 +24,7 @@ public class Main {
 //          statement.execute("alter table drzava drop column glavni_grad");
 //          statement.execute("alter table drzava add glavni_grad int references drzava(id);");
         baza = GeografijaDAO.getInstance();
+        System.out.println(baza);
         System.out.println(ispisiGradove());
 
 
@@ -34,6 +35,7 @@ public class Main {
     }
 
     public static String ispisiGradove() {
+        baza = GeografijaDAO.getInstance();
         ArrayList<Grad> gradovi = baza.gradovi();
         StringBuilder res= new StringBuilder();
         for(Grad x : gradovi){
