@@ -26,7 +26,22 @@ public class Main {
         baza = GeografijaDAO.getInstance();
         System.out.println(baza);
         System.out.println(ispisiGradove());
+        Grad sarajevo = new Grad();
+        sarajevo.setNaziv("Sarajevo");
+        sarajevo.setBrojStanovnika(500000);
+        Drzava bih = new Drzava();
+        bih.setNaziv("Bosna i Hercegovina");
+        bih.setGlavniGrad(sarajevo);
+        sarajevo.setDrzava(bih);
 
+        GeografijaDAO dao = GeografijaDAO.getInstance();
+        dao.dodajDrzavu(bih);
+
+        dao.dodajGrad(sarajevo);
+
+        // Provjera
+        Grad proba = dao.glavniGrad("Bosna i Hercegovina");
+        System.out.println(proba);
 
     }
 

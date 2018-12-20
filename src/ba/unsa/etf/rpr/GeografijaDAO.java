@@ -4,11 +4,17 @@ import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 public class GeografijaDAO {
     private static GeografijaDAO instance;
     private static Connection connection;
     public static void removeInstance() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         instance = null;
     }
     private static PreparedStatement ubaci_drzavu = null;
@@ -47,24 +53,28 @@ public class GeografijaDAO {
             }catch (Exception e){
                 System.out.println("ovdje je greska"+e.getMessage());
                 //statement1.execute("CREATE TABLE grad(id int primary key, naziv varchar, broj_stanovnika INTEGER,drzava int; ");
-                statement = connection.prepareStatement("delete from drzava;");
+                statement = connection.prepareStatement("delete from drzava");
                 statement.execute();
                 statement = connection.prepareStatement("delete from grad");
                 statement.execute();
             }
-            statement = connection.prepareStatement("SELECT * from main.drzava");
+            statement = connection.prepareStatement("SELECT * from drzava");
+            System.out.println("proso jedan");
+            ubaci_drzavu = connection.prepareStatement("INSERT INTO drzava VALUES(?,?,?)");
+            System.out.println("proso dva");
+            ubaci_grad = connection.prepareStatement("INSERT INTO grad VALUES (?,?,?,?)");
+            System.out.println("Proso 3");
 
-            ubaci_drzavu = connection.prepareStatement("INSERT INTO main.drzava VALUES(?,?,?)");
-            ubaci_grad = connection.prepareStatement("INSERT INTO main.grad VALUES (?,?,?,?)");
 
-
-            ResultSet drzave = statement.executeQuery();
+            System.out.println("Proso 4");
 //            System.out.println(drzave.isClosed()+"  ");
-            if(drzave.isClosed()){
+            if(true){
                 ubaci_drzavu.setInt(1,1);
                 ubaci_drzavu.setString(2,"Austrija");
                 ubaci_drzavu.setInt(3,5);
+                System.out.println("proso 10");
                 ubaci_drzavu.execute();
+                System.out.println("proso 10");
 //                ubaci_drzavu.setInt(1,2);
 //                ubaci_drzavu.setString(2,"Bosna i Hercegovina");
 //                ubaci_drzavu.execute();
@@ -87,6 +97,7 @@ public class GeografijaDAO {
                 ubaci_grad.setString(2,"London");
                 ubaci_grad.setInt(4,4);
                 ubaci_grad.execute();
+
                 ubaci_grad.setInt(1,3);
                 ubaci_grad.setInt(3,545500);
                 ubaci_grad.setString(2,"Manchester");
@@ -110,9 +121,10 @@ public class GeografijaDAO {
                 x = connection.prepareStatement("update table drzava set glavni_grad = 5 where id = 1");
 
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
 //            System.out.println("ima baza, ali nece da pripremi statement");
 //            System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
 
         try {
@@ -120,8 +132,8 @@ public class GeografijaDAO {
             dajDrzave = connection.prepareStatement("select * from drzava");
             getGrad = connection.prepareStatement("select * from grad where id=?");
             getDrzava = connection.prepareStatement("select * from drzava where naziv=?");
-        } catch (SQLException e) {
-
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -181,30 +193,46 @@ public class GeografijaDAO {
 
     public Grad glavniGrad(String drzava) {
         try {
-
-            getDrzava.setString(1,drzava);
-            ResultSet res = getDrzava.executeQuery();
-            if(res.isClosed())return null;
+            //System.out.println(drzava);
+//            getDrzava.setString(1,drzava);
+//            ResultSet res = getDrzava.executeQuery();
+//
+//            int id=0;
+//            Drzava drzava1 = new Drzava();
+//            if(!res.next())return null;
+//            System.out.println("a");
+//            do {
+//                drzava1.setNaziv(res.getString(2));
+//                id = res.getInt("glavni_grad");
+//            }while(res.next());
+//
+////            if(!res.isClosed())res.close();
             int id=0;
+            ResultSet res = dajDrzave.executeQuery();
             Drzava drzava1 = new Drzava();
-            while (res.next()){
-                drzava1.setNaziv(res.getString(2));
-                id=res.getInt("glavni_grad");
+            while(res.next()){
+                System.out.println(res.getString(2));
+                if(drzava.equals(res.getString(2))){
+                    drzava1.setNaziv(drzava);
+                    id=res.getInt(3);
+//                    res.close();
+                }
             }
-            if(!res.isClosed())res.close();
-
+//            System.out.println(id);
             getGrad.setInt(1,id);
             res = getGrad.executeQuery();
-            if(res.isClosed())return null;
+            if(!res.next()){
+                return null;
+            }
             Grad glavniGrad=new Grad();
-            while(res.next()){
+            do{
                 glavniGrad.setNaziv(res.getString(2));
                 glavniGrad.setDrzava(drzava1);
                 glavniGrad.setBrojStanovnika(res.getInt(3));
                 drzava1.setGlavniGrad(glavniGrad);
                 res.close();
                 break;
-            }
+            }while(res.next());
             return glavniGrad;
         } catch (SQLException e) {
 //            e.printStackTrace();
@@ -233,7 +261,7 @@ public class GeografijaDAO {
             statement = connection.prepareStatement("delete from grad where drzava=?");
             statement.setInt(1,id);
             statement.execute();
-            System.out.println(id);
+            //System.out.println(id);
             statement = connection.prepareStatement("delete from drzava where id=?");
             statement.setInt(1,id);
             statement.execute();
@@ -323,7 +351,9 @@ public class GeografijaDAO {
         try {
             getDrzava.setString(1,drzava.getNaziv());
             ResultSet set = getDrzava.executeQuery();
-            if(set.isClosed()){
+//            Stream a = set.getArray(1).getArray();
+
+            if( set.isClosed()|| !set.next() ){
                 Statement stm = connection.createStatement();
                 set = stm.executeQuery("select count(*) from drzava");
                 ubaci_drzavu.setString(2,drzava.getNaziv());
@@ -331,14 +361,14 @@ public class GeografijaDAO {
                 ubaci_drzavu.setInt(1,a+2);
                 set = stm.executeQuery("select count(*) from grad");
                 int b=set.getInt(1)+3;
-//                PreparedStatement statement = connection.prepareStatement("select id from grad where naziv=?");
-//                statement.setString(1,drzava.getGlavniGrad().getNaziv());
+
                 ubaci_drzavu.setInt(3,b);
-                ubaci_drzavu.execute();
+                System.out.println(ubaci_drzavu.execute()+" lkjhgfdsa");;
                 dodajGrad(drzava.getGlavniGrad());
+
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
     }
