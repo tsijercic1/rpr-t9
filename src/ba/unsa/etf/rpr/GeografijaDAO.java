@@ -188,6 +188,30 @@ public class GeografijaDAO {
     }
 
     public void obrisiDrzavu(String drzava) {
+        int id=0;
+        PreparedStatement statement= null;
+        try {
+            statement = connection.prepareStatement("select id from drzava where naziv = ?");
+            statement.setString(1,drzava);
+            ResultSet set = statement.executeQuery();
+            if(set.isClosed()){
+                //nema drzave
+                return ;
+            }
+            while(set.next()){
+                id=set.getInt(1);
+                set.close();
+                break;
+            }
+            statement = connection.prepareStatement("delete from grad where drzava=?");
+            statement.setInt(1,id);
+            statement.execute();
+            statement = connection.prepareStatement("delete from drzava where id=?");
+            statement.setInt(1,id);
+            statement.execute();
+        } catch (SQLException e) {
+//            e.printStackTrace();
+        }
     }
 
     public Drzava nadjiDrzavu(String drzava) {
