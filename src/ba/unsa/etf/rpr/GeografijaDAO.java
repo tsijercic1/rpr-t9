@@ -153,9 +153,35 @@ public class GeografijaDAO {
     }
 
     public Grad glavniGrad(String drzava) {
-
-
-
+        try {
+            PreparedStatement x = connection.prepareStatement("select * from drzava where naziv=?");
+            x.setString(1,drzava);
+            ResultSet res = x.executeQuery();
+            if(res.isClosed())return null;
+            int id=0;
+            Drzava drzava1 = new Drzava();
+            while (res.next()){
+                drzava1.setNaziv(res.getString(2));
+                id=res.getInt("glavni_grad");
+            }
+            if(!res.isClosed())res.close();
+            x = connection.prepareStatement("select * from grad where id=?");
+            x.setInt(1,id);
+            res = x.executeQuery();
+            if(res.isClosed())return null;
+            Grad glavniGrad=new Grad();
+            while(res.next()){
+                glavniGrad.setNaziv(res.getString(2));
+                glavniGrad.setDrzava(drzava1);
+                glavniGrad.setBrojStanovnika(res.getInt(3));
+                drzava1.setGlavniGrad(glavniGrad);
+                res.close();
+                break;
+            }
+            return glavniGrad;
+        } catch (SQLException e) {
+//            e.printStackTrace();
+        }
 
 
         return null;
