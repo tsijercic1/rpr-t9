@@ -14,6 +14,8 @@ public class GeografijaDAO {
     private static PreparedStatement ubaci_grad = null;
     private static PreparedStatement dajGradove = null;
     private static PreparedStatement dajDrzave = null;
+    private static PreparedStatement getGrad = null;
+    private static PreparedStatement getDrzava = null;
 
     private GeografijaDAO(){
         connection = null;
@@ -39,6 +41,7 @@ public class GeografijaDAO {
             statement = connection.prepareStatement("SELECT * from main.drzava;");
             ubaci_drzavu = connection.prepareStatement("INSERT INTO main.drzava VALUES(?,?,?);");
             ubaci_grad = connection.prepareStatement("INSERT INTO main.grad VALUES (?,?,?,?);");
+
 
             ResultSet drzave = statement.executeQuery();
             System.out.println(drzave.isClosed()+"  ");
@@ -100,6 +103,8 @@ public class GeografijaDAO {
         try {
             dajGradove = connection.prepareStatement("select * from grad;");
             dajDrzave = connection.prepareStatement("select * from drzava;");
+            getGrad = connection.prepareStatement("select * from grad where id=?");
+            getDrzava = connection.prepareStatement("select * from drzava where naziv=?");
         } catch (SQLException e) {
 
         }
@@ -154,9 +159,9 @@ public class GeografijaDAO {
 
     public Grad glavniGrad(String drzava) {
         try {
-            PreparedStatement x = connection.prepareStatement("select * from drzava where naziv=?");
-            x.setString(1,drzava);
-            ResultSet res = x.executeQuery();
+
+            getDrzava.setString(1,drzava);
+            ResultSet res = getDrzava.executeQuery();
             if(res.isClosed())return null;
             int id=0;
             Drzava drzava1 = new Drzava();
@@ -165,9 +170,9 @@ public class GeografijaDAO {
                 id=res.getInt("glavni_grad");
             }
             if(!res.isClosed())res.close();
-            x = connection.prepareStatement("select * from grad where id=?");
-            x.setInt(1,id);
-            res = x.executeQuery();
+
+            getGrad.setInt(1,id);
+            res = getGrad.executeQuery();
             if(res.isClosed())return null;
             Grad glavniGrad=new Grad();
             while(res.next()){
@@ -215,6 +220,38 @@ public class GeografijaDAO {
     }
 
     public Drzava nadjiDrzavu(String drzava) {
+
+        try {
+
+            getDrzava.setString(1,drzava);
+            ResultSet set = getDrzava.executeQuery();
+            if(set.isClosed()){
+                //nema drzave
+                return null;
+            }
+            Drzava drzava1 = new Drzava();
+            int id=0;
+            while(set.next()){
+                drzava1.setNaziv(set.getString(2));
+                id=set.getInt(3);
+                set.close();
+                break;
+            }
+            Grad glavniGrad = new Grad();
+            getGrad.setInt(1,id);
+            ResultSet res = getGrad.executeQuery();
+            while(res.next()){
+                glavniGrad.setNaziv(res.getString(2));
+                glavniGrad.setBrojStanovnika(res.getInt(3));
+                glavniGrad.setDrzava(drzava1);
+                res.close();
+                break;
+            }
+            return drzava1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 
