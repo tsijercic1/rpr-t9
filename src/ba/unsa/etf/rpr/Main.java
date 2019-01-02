@@ -1,5 +1,13 @@
 package ba.unsa.etf.rpr;
 
+import javafx.application.Application;
+import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -7,34 +15,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Main {
+import static javafx.scene.control.PopupControl.USE_COMPUTED_SIZE;
 
-    private static GeografijaDAO baza;
-    public static void main(String[] args) throws SQLException {
-
-        baza = GeografijaDAO.getInstance();
-        System.out.println(baza);
-        System.out.println(ispisiGradove());
-        Grad sarajevo = new Grad();
-        sarajevo.setNaziv("Sarajevo");
-        sarajevo.setBrojStanovnika(500000);
-        Drzava bih = new Drzava();
-        bih.setNaziv("Bosna i Hercegovina");
-        bih.setGlavniGrad(sarajevo);
-        sarajevo.setDrzava(bih);
-
-        GeografijaDAO dao = GeografijaDAO.getInstance();
-        dao.dodajDrzavu(bih);
-
-        dao.dodajGrad(sarajevo);
-
-        // Provjera
-        Grad proba = dao.glavniGrad("Bosna i Hercegovina");
-        System.out.println(proba);
-
-        glavniGrad();
-
-    }
+public class Main extends Application {
 
     private static void glavniGrad() {
         GeografijaDAO baza = GeografijaDAO.getInstance();
@@ -56,6 +39,29 @@ public class Main {
             res.append(x.getNaziv()).append(" (").append(x.getDrzava().getNaziv()).append(") - ").append(x.getBrojStanovnika()).append("\n");
         }
         return res.toString();
+
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        baza=GeografijaDAO.getInstance();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/prozor.fxml"));
+        loader.setController(new Controller(baza));
+        Parent root = loader.load();
+        primaryStage.setTitle("Gradovi");
+        primaryStage.setScene(new Scene(root, USE_COMPUTED_SIZE, USE_COMPUTED_SIZE));
+        primaryStage.show();
+        primaryStage.setOnHiding(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                baza.removeInstance();
+            }
+        });
+    }
+
+    private static GeografijaDAO baza;
+    public static void main(String[] args){
+        launch(args);
 
     }
 }

@@ -50,8 +50,8 @@ public class Grad {
         return brojStanovnika;
     }
 
-//    @Override
-//    public String toString() {
-//        return naziv+" sa "+brojStanovnika+" stanovnika u ->"+drzava+"\n";
-//    }
+    @Override
+    public String toString() {
+        return naziv+" sa "+brojStanovnika+" stanovnika u ->"+drzava.getNaziv()+"\n";
+    }
 }
